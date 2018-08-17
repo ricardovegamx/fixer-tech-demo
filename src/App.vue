@@ -60,9 +60,18 @@ export default {
     },
   },
   mounted() {
+    /**
+     * Try to display current date results if they were previously requested.
+     * Example: user opens the app, perform a today's request, closes the app 
+     * and returns to it later on. So today results are displayed immediately.
+     */
     this.loadFromLocalStorage();
   },
   methods: {
+    /**
+     * Updated method tries to get data from localStorage first. If there's no data,
+     * it performs the API call and stores response if it was successful.
+     */
     update() {
       this.isLoading = true;
       if (!this.loadFromLocalStorage()) {
@@ -85,6 +94,10 @@ export default {
           });
       }
     },
+    /**
+     * Try to get results from localStorage if they were requested in the past.
+     * This saves unnecessary API calls.
+     */
     loadFromLocalStorage() {
       if (this.getLocalStorage(this.date)) {
         let chartData = JSON.parse(this.getLocalStorage(this.date));
@@ -95,6 +108,11 @@ export default {
         return false; 
       }
     },
+    /**
+     * The default base currency is EUR. In order to use MXN as base,
+     * a conversion as needed. This function prepares 2 arrays: one with the currencies to
+     * compare against and the one with values. This prepares the data to be rendered in chart.
+     */
     convertValuesToMXN(rates) {
       this.currencies = Object.keys(rates);
       let valuesInMXN = [];
@@ -103,17 +121,30 @@ export default {
       this.valuesInMXN = valuesInMXN;
       this.removeMXNFromResults();
     },
+    /**
+     * We don't want to display the MXN currency in the chart. So we remove it from the
+     * currencies and valuesInMXN arrays.
+     */
     removeMXNFromResults() {
       let indexOfMXN = this.currencies.indexOf(currency => currency == baseCurrency);
       this.currencies.splice(indexOfMXN, 1);
       this.valuesInMXN.splice(indexOfMXN, 1);
     },
+    /**
+     * Get a localStorage Item
+     */
     getLocalStorage(key) {
       return window.localStorage.getItem(key);
     },
+    /**
+     * Set a localStorage Item
+     */
     setLocalStorage(key, value) {
       window.localStorage.setItem(key, value);
     },
+    /**
+     * Render the chart using the valies in currencies and valuesInMXN arrays.
+     */
     renderChart() {
       this.$nextTick(() => {
         c3.generate({
